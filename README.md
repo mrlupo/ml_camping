@@ -19,7 +19,7 @@ my edit of Gandalfor redem_camping
 	
 	Add items to the your store
 	
-    Add ensure ml_menupersonal in your server.cfg
+    Add ensure ml_camping in your server.cfg
     Enjoy!
  
 # items for camping
