@@ -1,10 +1,38 @@
 --ml
+local Keys = {
+    ["R"] = 0xE30CD707,["Q"] = 0xDE794E3E,["O"] = 0xF1301666,["X"] = 0x8CC9CD42,
+}
 local campfire = 0
 local tent = 0
 local cauldron = 0
 local hitch = 0
 local Table = 0
 local chair = 0
+
+local WaterTypes = {
+    [1] =  {["name"] = "Sea of Coronado",       ["waterhash"] = -247856387, ["watertype"] = "lake"},
+    [2] =  {["name"] = "San Luis River",        ["waterhash"] = -1504425495, ["watertype"] = "river"},
+    [3] =  {["name"] = "Lake Don Julio",        ["waterhash"] = -1369817450, ["watertype"] = "lake"},
+    [4] =  {["name"] = "Flat Iron Lake",        ["waterhash"] = -1356490953, ["watertype"] = "lake"},
+    [5] =  {["name"] = "Upper Montana River",   ["waterhash"] = -1781130443, ["watertype"] = "river"},
+    [6] =  {["name"] = "Owanjila",              ["waterhash"] = -1300497193, ["watertype"] = "river"},
+    [7] =  {["name"] = "HawkEye Creek",         ["waterhash"] = -1276586360, ["watertype"] = "river"},
+    [8] =  {["name"] = "Little Creek River",    ["waterhash"] = -1410384421, ["watertype"] = "river"},
+    [9] =  {["name"] = "Dakota River",          ["waterhash"] = 370072007, ["watertype"] = "river"},
+    [10] =  {["name"] = "Beartooth Beck",       ["waterhash"] = 650214731, ["watertype"] = "river"},
+    [11] =  {["name"] = "Lake Isabella",        ["waterhash"] = 592454541, ["watertype"] = "lake"},
+    [12] =  {["name"] = "Cattail Pond",         ["waterhash"] = -804804953, ["watertype"] = "lake"},
+    [13] =  {["name"] = "Deadboot Creek",       ["waterhash"] = 1245451421, ["watertype"] = "river"},
+    [14] =  {["name"] = "Spider Gorge",         ["waterhash"] = -218679770, ["watertype"] = "river"},
+    [15] =  {["name"] = "O'Creagh's Run",       ["waterhash"] = -1817904483, ["watertype"] = "lake"},
+    [16] =  {["name"] = "Moonstone Pond",       ["waterhash"] = -811730579, ["watertype"] = "lake"},
+    [17] =  {["name"] = "Roanoke Valley",       ["waterhash"] = -1229593481, ["watertype"] = "river"},
+    [18] =  {["name"] = "Elysian Pool",         ["waterhash"] = -105598602, ["watertype"] = "lake"},
+    [19] =  {["name"] = "Heartland Overflow",   ["waterhash"] = 1755369577, ["watertype"] = "swamp"},
+    [20] =  {["name"] = "Lagras",               ["waterhash"] = -557290573, ["watertype"] = "swamp"},
+    [21] =  {["name"] = "Lannahechee River",    ["waterhash"] = -2040708515, ["watertype"] = "river"},
+    [22] =  {["name"] = "Dakota River",         ["waterhash"] = 370072007, ["watertype"] = "river"},
+}
 
 
 Citizen.CreateThread(function()
@@ -103,8 +131,8 @@ Citizen.CreateThread(function()
 
             WarMenu.Display()
 
-        elseif whenKeyJustPressed(keys["J"]) then 
-            WarMenu.OpenMenu('ml')
+       -- elseif whenKeyJustPressed(keys["J"]) then 
+         --   WarMenu.OpenMenu('ml')
         end
 		
 	
@@ -113,6 +141,12 @@ Citizen.CreateThread(function()
 end)
 
 --setting 
+RegisterCommand("setcamp", function(source, args, rawCommand) -- craft COMMAND
+local _source = source
+
+	WarMenu.OpenMenu('ml')
+
+end, false)
 
 RegisterNetEvent('ml_camping:setcampfire')
 AddEventHandler('ml_camping:setcampfire', function()
@@ -336,3 +370,169 @@ Citizen.Wait(0)
 TriggerEvent("ml_camping:delchair")
 
 end)
+
+
+RegisterNetEvent('ml_camping:Getwater')
+AddEventHandler('ml_camping:Getwater', function()
+    local ped = PlayerPedId()
+    local coords = GetEntityCoords(ped)
+    local Water = Citizen.InvokeNative(0x5BA7A68A346A5A91,coords.x+3, coords.y+3, coords.z)
+    local canCollect = false
+    for k,v in pairs(WaterTypes) do 
+        if Water == WaterTypes[k]["waterhash"]  then
+            canCollect = true           
+            break            
+        end
+    end
+    if canCollect then
+         TaskStartScenarioInPlace(ped, GetHashKey('WORLD_HUMAN_CROUCH_INSPECT'), 27000, true, false, false, false)
+		exports['progressBars']:startUI(27000, "Collecting water...")
+		Citizen.Wait(27000)
+
+        ClearPedTasksImmediately(ped)
+        ClearPedSecondaryTask(ped)
+        
+            TriggerServerEvent("collect")
+      
+    else
+        Citizen.Wait(2000)
+        TriggerEvent("redemrp_notification:start", "You can't collect water here!", 3)
+    end
+end)
+
+--cookfood
+
+Citizen.CreateThread(function()
+    WarMenu.CreateMenu('campfire', "prepare food")
+    WarMenu.SetSubTitle('campfire', 'prepare food')
+    WarMenu.CreateSubMenu('cook', 'campfire', 'cook food')
+	WarMenu.CreateSubMenu('cook1', 'campfire', 'Liquids')
+  
+
+    while true do
+
+        local ped = GetPlayerPed(-1)
+        local coords = GetEntityCoords(PlayerPedId())
+
+        if WarMenu.IsMenuOpened('campfire') then
+            if WarMenu.MenuButton('Cook Food', 'cook') then
+            end
+			if WarMenu.MenuButton('Liquids', 'cook1') then
+            end
+
+            WarMenu.Display()
+        elseif WarMenu.IsMenuOpened('cook') then
+            
+            if WarMenu.Button('Cook Raw Meat') then
+                       TriggerServerEvent("def_cookfood:getmeat")
+					   WarMenu.CloseMenu() 
+			elseif WarMenu.Button('Cook Fish') then
+                       TriggerServerEvent("def_cookfood:getfish")
+					   WarMenu.CloseMenu() 
+ 
+			end
+   
+            WarMenu.Display()
+		elseif WarMenu.IsMenuOpened('cook1') then
+            
+            if WarMenu.Button('Clean Dirty Water') then
+                       TriggerServerEvent("def_cookfood:getwater")
+					   WarMenu.CloseMenu() 
+ 
+			end
+   
+            WarMenu.Display()	
+		
+        end
+        Citizen.Wait(0)
+    end
+end)
+
+local Gedrukt = false
+
+Citizen.CreateThread(function()
+    while true do
+        Wait(0)
+        local pos, awayFromObject = GetEntityCoords(PlayerPedId()), true
+        local craftObject = GetClosestObjectOfType(pos, 2.0, GetHashKey("p_campfire02x"), false, false, false)
+        if craftObject ~= 0 then
+            local objectPos = GetEntityCoords(craftObject)
+            if GetDistanceBetweenCoords(pos.x, pos.y, pos.z, objectPos.x, objectPos.y, objectPos.z, true) < 2.5 then
+                awayFromObject = false
+                DrawText3D(objectPos.x, objectPos.y, objectPos.z, "~g~R~w~ - Cook Food")
+                if IsControlJustReleased(0, Keys["R"]) and Gedrukt == false then
+                    Gedrukt = true
+					WarMenu.OpenMenu('campfire')
+                    --TriggerServerEvent('ec-menu:server:hasmeat')
+                end
+				Gedrukt = false
+            end
+        end
+        if awayFromObject then
+            Wait(1000)
+			
+        end
+    end
+end)
+
+ local cookMeat = false
+ local cleanWater = false
+ local cookFish = false
+
+RegisterNetEvent('def_cookfood:cookmeat')
+AddEventHandler('def_cookfood:cookmeat', function()
+	
+    local playerPed = PlayerPedId()
+	cookMeat = true  
+    TaskStartScenarioInPlace(playerPed, GetHashKey('WORLD_HUMAN_CROUCH_INSPECT'), 27000, true, false, false, false)
+    exports['progressBars']:startUI(27000, "Cooking meat...")
+    Citizen.Wait(27000)
+    ClearPedTasksImmediately(PlayerPedId())
+
+end)
+
+RegisterNetEvent('def_cookfood:clean')
+AddEventHandler('def_cookfood:clean', function()
+
+    local playerPed = PlayerPedId()
+	cleanWater = true
+    TaskStartScenarioInPlace(playerPed, GetHashKey('WORLD_HUMAN_CROUCH_INSPECT'), 27000, true, false, false, false)
+    exports['progressBars']:startUI(27000, "Cleaning water...")
+    Citizen.Wait(27000)
+    ClearPedTasksImmediately(PlayerPedId())
+
+end)
+
+RegisterNetEvent('def_cookfood:cookfish')
+AddEventHandler('def_cookfood:cookfish', function()
+	
+    local playerPed = PlayerPedId()
+	local cookFish = true
+    TaskStartScenarioInPlace(playerPed, GetHashKey('WORLD_HUMAN_CROUCH_INSPECT'), 27000, true, false, false, false)
+    exports['progressBars']:startUI(27000, "Cooking fish...")
+    Citizen.Wait(27000)
+    ClearPedTasksImmediately(PlayerPedId())
+
+end)
+
+
+function DrawText3D(x, y, z, text)
+    local onScreen,_x,_y=GetScreenCoordFromWorldCoord(x, y, z)
+    local px,py,pz=table.unpack(GetGameplayCamCoord())
+    
+    SetTextScale(0.35, 0.35)
+    SetTextFontForCurrentCommand(1)
+    SetTextColor(255, 255, 255, 215)
+    local str = CreateVarString(10, "LITERAL_STRING", text, Citizen.ResultAsLong())
+    SetTextCentre(1)
+    DisplayText(str,_x,_y)
+    local factor = (string.len(text)) / 150
+    DrawSprite("generic_textures", "hud_menu_4a", _x, _y+0.0125,0.015+ factor, 0.03, 0.1, 100, 1, 1, 190, 0)
+end
+
+function ShowPrompt(msg)
+    SetTextScale(0.5, 0.5)
+    local str = Citizen.InvokeNative(0xFA925AC00EB830B9, 10, "LITERAL_STRING", msg, Citizen.ResultAsLong())
+    Citizen.InvokeNative(0xFA233F8FE190514C, str)
+    Citizen.InvokeNative(0xE9990552DEC71600)
+end
