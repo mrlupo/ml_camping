@@ -1,7 +1,9 @@
-# ml_camping
-my edit of Gandalfor redem_camping
- 
+
+# ml_campingmenu 
 # by Mrlupo
+added ml_cookfood to this menu when a campfire is down you can cook food
+added ml_waterboy get empty bottle and collect dirty water from a lake or river
+
 
 1. Requirements 
 
@@ -17,6 +19,12 @@ my edit of Gandalfor redem_camping
 	["woodenlogs"] = "Wooden logs",
 	}
 	
+	["dirtywater"]
+	["rawfish"]
+	["rawmeat"] 
+	["cookedfish"] 
+	["cookedmeat"] 
+	
 	Add items to the your store
 	
     Add ensure ml_camping in your server.cfg
@@ -30,6 +38,10 @@ cauldron = 1 cauldron , 2 woodenlogs
 hitch = 1 hitch
 Table = 3 woodenplanks
 chair = 3 woodenplanks
+
+added rawmeat , rawfish gives you cookedmeat and cookedfish
+added dirtywater gives water
+added emptybottle gives dirtywater
 
 # credit 
 
